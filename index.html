@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux — это офигенно. А Windows… ну, вы поняли</title>
+<meta name="description" content="Манифест свободного человека: почему Linux офигенный, а Windows — нет.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:ital,wght@0,400;0,600;0,800;1,400&family=Golos+Text:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#070a07; --bg1:#0b100b; --panel:#0d130d; --panel2:#101710;
+  --line:#1e2b1e; --line2:#2e452e;
+  --txt:#cfe3cf; --dim:#84a084; --mut:#586c58;
+  --grn:#45ff82; --grn-d:#1f9c50; --amb:#ffc24b; --cyn:#54e0d0;
+  --red:#ff5f56; --mag:#ff6ac1; --blu:#4aa3ff; --bsod:#1273d6;
+  --paper:#eae4d6; --ink:#181a12;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --disp:'Unbounded',sans-serif;
+  --body:'Golos Text',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg0);
+  background-image:
+    radial-gradient(900px 480px at 82% -8%, rgba(69,255,130,.07), transparent 60%),
+    radial-gradient(700px 400px at -10% 40%, rgba(84,224,208,.04), transparent 60%),
+    linear-gradient(rgba(255,255,255,.016) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.016) 1px, transparent 1px);
+  background-size:auto,auto,34px 34px,34px 34px;
+  color:var(--txt); font-family:var(--body); font-size:16px; line-height:1.65;
+  overflow-x:hidden;
+}
+body.locked{overflow:hidden}
+::selection{background:var(--grn);color:#041207}
+::-webkit-scrollbar{width:10px}::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:#1d3320;border:2px solid var(--bg0)}
+::-webkit-scrollbar-thumb:hover{background:var(--grn-d)}
+a{color:var(--grn);text-decoration:none}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--grn);outline-offset:3px}
+section{scroll-margin-top:84px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+
+/* ── оверлеи: сканлайны + шум ── */
+#crt{position:fixed;inset:0;z-index:120;pointer-events:none;opacity:.28;
+  background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px)}
+#noise{position:fixed;inset:0;z-index:119;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E")}
+
+/* ── ЗАГРУЗКА / ВХОД ── */
+#boot{position:fixed;inset:0;z-index:200;background:#040604;display:flex;flex-direction:column;
+  padding:clamp(18px,5vh,54px) clamp(18px,6vw,90px);overflow:hidden;
+  font-family:var(--mono);font-size:13px;line-height:1.75;
+  background-image:radial-gradient(120% 90% at 50% 10%, rgba(69,255,130,.05), transparent 60%),
+    radial-gradient(140% 120% at 50% 120%, rgba(0,0,0,.9), transparent 55%)}
+#boot.off{animation:crtoff .55s cubic-bezier(.7,0,.9,1) forwards}
+@keyframes crtoff{0%{transform:scaleY(1);filter:brightness(1)}55%{transform:scaleY(.012);filter:brightness(2.6)}100%{transform:scaleY(.012);opacity:0}}
+#bootlog{flex:1;overflow-y:auto;color:#9fc79f;text-shadow:0 0 8px rgba(69,255,130,.25)}
+.bl-line{white-space:pre-wrap;word-break:break-word}
+.bl-ok{color:var(--grn);font-weight:600}
+.bl-warn{color:var(--amb)}
+.bl-dim{color:#5d745d}
+.cur{display:inline-block;width:.62em;background:var(--grn);color:var(--grn);animation:blink 1s steps(1) infinite;margin-left:1px}
+@keyframes blink{50%{opacity:0}}
+#bootinput{position:absolute;opacity:0;width:2px;height:2px;left:-50px}
+#skip{position:absolute;top:14px;right:18px;background:none;border:1px dashed #2c452c;color:#6d866d;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:7px 12px;transition:.2s}
+#skip:hover{color:var(--grn);border-color:var(--grn)}
+.shake{animation:shk .3s}
+@keyframes shk{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ── шапка ── */
+header{position:sticky;top:0;z-index:90;background:rgba(8,12,8,.94);border-bottom:1px solid var(--line)}
+.hd{display:flex;align-items:center;gap:22px;height:58px}
+.logo{font-family:var(--mono);font-weight:800;color:var(--grn);font-size:14px;white-space:nowrap;text-shadow:0 0 10px rgba(69,255,130,.4)}
+nav{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;flex:1}
+nav::-webkit-scrollbar{display:none}
+nav a{font-family:var(--mono);font-size:12px;color:var(--dim);padding:6px 10px;white-space:nowrap;position:relative;transition:color .2s}
+nav a::before{content:'/';color:var(--mut);margin-right:2px}
+nav a::after{content:'';position:absolute;left:10px;right:100%;bottom:2px;height:1px;background:var(--grn);transition:right .25s}
+nav a:hover{color:var(--grn)}
+nav a:hover::after{right:10px}
+.upt{font-family:var(--mono);font-size:11.5px;color:var(--mut);white-space:nowrap;display:flex;gap:10px;align-items:center}
+.upt b{color:var(--grn);font-weight:600}
+.upt .dot{width:7px;height:7px;background:var(--grn);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.25;box-shadow:0 0 0 4px rgba(69,255,130,.12)}}
+
+/* ── hero ── */
+.hero{padding:clamp(52px,9vh,96px) 0 clamp(40px,6vh,64px)}
+.hero-grid{display:grid;grid-template-columns:1.12fr .88fr;gap:44px;align-items:center}
+.shebang{font-family:var(--mono);color:var(--amb);font-size:13px;letter-spacing:.08em;margin-bottom:18px}
+h1{font-family:var(--disp);font-weight:900;font-size:clamp(2.1rem,5.6vw,4.3rem);line-height:1.06;color:#eaffec;letter-spacing:-.01em}
+h1 .g{color:var(--grn);text-shadow:0 0 26px rgba(69,255,130,.35)}
+.hero-sub{margin:22px 0 26px;max-width:56ch;color:var(--dim);font-size:17px}
+.typed{font-family:var(--mono);font-size:15px;color:var(--grn);background:var(--panel);border:1px solid var(--line);
+  padding:13px 18px;display:inline-block;min-width:min(430px,100%)}
+.chips{list-style:none;display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+.chips li{font-family:var(--mono);font-size:12px;color:var(--txt);border:1px solid var(--line2);padding:7px 13px;background:var(--bg1)}
+.chips li b{color:var(--grn)}
+
+.term{background:var(--panel);border:1px solid var(--line);box-shadow:0 24px 60px rgba(0,0,0,.5), 0 0 0 1px rgba(69,255,130,.04)}
+.tb{display:flex;align-items:center;gap:7px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.tb i{width:10px;height:10px;border-radius:50%;display:block}
+.tb i:nth-child(1){background:var(--red)}.tb i:nth-child(2){background:var(--amb)}.tb i:nth-child(3){background:var(--grn)}
+.tb span{margin-left:10px;font-family:var(--mono);font-size:11px;color:var(--mut);letter-spacing:.08em}
+.nf{padding:20px;font-family:var(--mono);font-size:12.5px;line-height:1.8;display:grid;grid-template-columns:auto 1fr;gap:0 20px}
+.nf pre{color:var(--grn);font-size:11px;line-height:1.35;text-shadow:0 0 12px rgba(69,255,130,.35)}
+.nf .k{color:var(--grn);font-weight:600}
+.nf .v{color:var(--txt)}
+.nf .palette{grid-column:1/-1;letter-spacing:2px;margin-top:6px}
+
+/* ── бегущая строка ── */
+.tick{border-block:1px solid var(--line);background:var(--bg1);overflow:hidden}
+.tick-in{display:flex;width:max-content;animation:tick 36s linear infinite}
+.tick.rev .tick-in{animation-direction:reverse}
+.tick span{font-family:var(--mono);font-size:13px;color:var(--dim);padding:12px 26px;white-space:nowrap}
+.tick b{color:var(--grn);font-weight:600}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ── заголовки секций ── */
+.shead{margin:0 0 40px;display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+.snum{font-family:var(--mono);font-size:13px;color:var(--amb);letter-spacing:.1em}
+.shead h2{font-family:var(--mono);font-weight:800;font-size:clamp(1.35rem,3.4vw,2.2rem);color:#eaffec;letter-spacing:-.01em}
+.snote{font-family:var(--mono);font-size:12px;color:var(--mut);margin-left:auto}
+.pad{padding:clamp(64px,10vh,110px) 0}
+
+/* ── манифест: sticky ── */
+.mani{display:grid;grid-template-columns:.9fr 1.1fr;gap:56px}
+.mani-l{position:sticky;top:96px;align-self:start}
+.mani-l h2{font-family:var(--disp);font-weight:900;font-size:clamp(1.9rem,4vw,3rem);line-height:1.1;color:#eaffec;margin:14px 0 20px}
+.mani-l p{color:var(--dim);max-width:44ch}
+.stamp{margin-top:34px;width:132px;height:132px;border:2px dashed var(--amb);border-radius:50%;display:flex;align-items:center;justify-content:center;
+  text-align:center;font-family:var(--mono);font-size:11px;color:var(--amb);letter-spacing:.12em;transform:rotate(-9deg);line-height:1.6}
+.mi{border-top:1px solid var(--line);padding:30px 0 30px 8px;display:grid;grid-template-columns:74px 1fr;gap:18px}
+.mi:last-child{border-bottom:1px solid var(--line)}
+.mi .n{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--grn);opacity:.85}
+.mi h3{font-family:var(--disp);font-weight:700;font-size:20px;color:#eaffec;margin-bottom:8px}
+.mi p{color:var(--dim);max-width:52ch}
+.lm{overflow:hidden}
+.lm>*{transform:translateY(115%);transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.in .lm>*{transform:none}
+
+/* ── аргументы в терминале ── */
+.agrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.tcard{background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;transition:transform .3s,box-shadow .3s,border-color .3s}
+.tcard:hover{transform:translateY(-6px);border-color:var(--acc,var(--grn));box-shadow:0 18px 44px rgba(0,0,0,.5)}
+.tcard .tb span{color:var(--acc,var(--grn))}
+.tbody{padding:16px 18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.85;flex:1}
+.tcmd{color:var(--txt)}
+.tcmd .p{color:var(--acc,var(--grn));font-weight:600}
+.t-out{color:var(--acc,var(--grn));white-space:pre-wrap;margin-top:10px;min-height:3.6em;opacity:.95}
+.a1{--acc:var(--grn)}.a2{--acc:var(--cyn)}.a3{--acc:var(--amb)}.a4{--acc:var(--mag)}.a5{--acc:var(--red)}.a6{--acc:var(--blu)}
+.w2{grid-column:span 2}
+
+/* ── сравнение ── */
+.vs{display:grid;grid-template-columns:1.25fr .75fr;gap:34px;align-items:start}
+.legend{display:grid;grid-template-columns:minmax(110px,190px) 1fr 1fr;gap:14px;margin-bottom:14px;font-family:var(--mono);font-size:12px}
+.legend b{color:var(--grn)}.legend i{color:var(--red);font-style:normal}
+.crow{display:grid;grid-template-columns:minmax(110px,190px) 1fr 1fr;gap:14px;align-items:center;padding:12px 0;border-top:1px dashed var(--line)}
+.row-h{font-family:var(--mono);font-size:12.5px;color:var(--dim)}
+.bar{position:relative;height:28px;background:#0c120c;border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;transition:width 1.1s cubic-bezier(.2,.8,.2,1) .2s}
+.bar.good i{background:linear-gradient(90deg,#175c36,var(--grn))}
+.bar.bad i{background:linear-gradient(90deg,#5c1f17,var(--red))}
+.in .bar i{width:var(--w)}
+.bar b{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:10.5px;font-weight:600;color:#eaffec;white-space:nowrap}
+.verdict{margin-top:26px;font-family:var(--mono);font-size:13.5px;color:var(--grn);white-space:pre-wrap}
+#bsod{position:sticky;top:96px;background:var(--bsod);color:#fff;padding:34px 30px;cursor:pointer;
+  font-family:var(--mono);min-height:280px;display:flex;flex-direction:column;justify-content:center;gap:14px;transition:box-shadow .3s}
+#bsod:hover{box-shadow:0 0 0 3px rgba(74,163,255,.35),0 22px 50px rgba(18,115,214,.35)}
+#bsod .sad{font-size:56px;line-height:1}
+#bsod .pct{font-size:14px}
+#bsod .hint{font-size:11px;opacity:.75;letter-spacing:.1em;text-transform:uppercase}
+#bsod.fixed{background:#0a1a0d;border:1px solid var(--grn);cursor:default}
+#bsod.fixed a{color:var(--grn);border-bottom:1px dashed var(--grn)}
+
+/* ── man-страница (светлая) ── */
+.paper{background:var(--paper);color:var(--ink);padding:clamp(56px,9vh,96px) 0}
+.paper .mhd,.paper .mftr{display:flex;justify-content:space-between;font-family:var(--mono);font-weight:800;font-size:13px;letter-spacing:.08em;border-bottom:3px double var(--ink);padding-bottom:10px;flex-wrap:wrap;gap:6px}
+.paper .mftr{border-bottom:none;border-top:3px double var(--ink);padding-top:10px;margin-top:36px}
+.man-body{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:34px;font-family:var(--mono);font-size:13.5px;line-height:1.9}
+.man-body h4{font-size:13px;letter-spacing:.16em;margin:22px 0 8px;color:#7a2d17}
+.man-body h4:first-child{margin-top:0}
+.man-body ul{list-style:none}
+.man-body li::before{content:'— ';color:#7a2d17}
+.man-body .flag{color:#1d5c36;font-weight:700}
+
+/* ── подбор дистрибутива ── */
+.pbox{background:var(--panel);border:1px solid var(--line)}
+.pbody{padding:22px;font-family:var(--mono);font-size:13px;line-height:1.9;min-height:230px}
+.pl{white-space:pre-wrap}
+.pl .p{color:var(--amb);font-weight:600}
+.pl.sys{color:var(--dim)}
+.pans{display:flex;flex-wrap:wrap;gap:10px;padding:0 22px 22px}
+.pans button{background:none;border:1px solid var(--line2);color:var(--txt);font-family:var(--mono);font-size:12.5px;padding:10px 16px;transition:.2s}
+.pans button:hover{border-color:var(--amb);color:var(--amb);transform:translateY(-2px)}
+.dcard{border:1px solid var(--amb);padding:20px;margin-top:16px;background:#141207}
+.dcard .dn{font-family:var(--disp);font-weight:700;font-size:24px;color:var(--amb)}
+.dcard .dt{color:var(--txt);margin:6px 0 12px}
+.dcard .dm{font-size:11.5px;color:var(--dim);letter-spacing:.06em}
+.dcard p{color:var(--dim);margin-top:10px;font-family:var(--body)}
+
+/* ── живой терминал ── */
+.shellbox{background:#080c08;border:1px solid var(--line2);box-shadow:0 30px 80px rgba(0,0,0,.55)}
+.sh-out{padding:20px 22px;font-family:var(--mono);font-size:13px;line-height:1.8;min-height:340px;max-height:460px;overflow-y:auto}
+.shl{white-space:pre-wrap;word-break:break-word}
+.shl.cmd{color:#eaffec}.shl.cmd .p{color:var(--grn);font-weight:600}
+.shl.ok{color:var(--grn)}.shl.err{color:var(--red)}.shl.blue{color:#9ecbff}.shl.dim{color:var(--mut)}.shl.pre{color:var(--cyn)}
+.sh-in{display:flex;gap:10px;padding:0 22px 20px;font-family:var(--mono);font-size:13px}
+.sh-in .p{color:var(--grn);font-weight:600;white-space:nowrap}
+#shin{flex:1;background:none;border:none;color:#eaffec;font-family:var(--mono);font-size:13px;caret-color:var(--grn)}
+#shin:focus{outline:none}
+.hints{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.hints button{background:none;border:1px dashed var(--line2);color:var(--dim);font-family:var(--mono);font-size:11.5px;padding:6px 12px;transition:.2s}
+.hints button:hover{color:var(--grn);border-color:var(--grn)}
+
+/* ── git log ── */
+.glog{border-left:2px dashed var(--line2);margin-left:8px;padding-left:30px;display:grid;gap:26px}
+.gc{position:relative;font-family:var(--mono);font-size:13.5px}
+.gc::before{content:'';position:absolute;left:-37px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--bg0);border:2px solid var(--grn)}
+.gc .h{color:var(--amb);font-weight:700}
+.gc .a{color:var(--cyn)}.gc .d{color:var(--mut)}
+.gc .m{color:var(--txt);display:block;margin-top:4px;font-size:14.5px}
+.gc .m b{color:var(--grn)}
+
+/* ── футер ── */
+footer{background:#050805;border-top:1px solid var(--line);padding:clamp(64px,10vh,110px) 0 40px}
+.cta h2{font-family:var(--disp);font-weight:900;font-size:clamp(1.9rem,5vw,3.6rem);color:#eaffec;line-height:1.08;max-width:20ch}
+.cta h2 em{font-style:normal;color:var(--red)}
+.cta .pr-line{font-family:var(--mono);font-size:15px;color:var(--grn);margin:26px 0}
+.btn{display:inline-block;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid var(--grn);color:var(--grn);background:none;padding:16px 28px;transition:.25s}
+.btn:hover{background:var(--grn);color:#041207;box-shadow:0 0 30px rgba(69,255,130,.4);transform:translateY(-2px)}
+.meta{margin-top:70px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;border-top:1px dashed var(--line);padding-top:22px;
+  font-family:var(--mono);font-size:11.5px;color:var(--mut)}
+.meta button{background:none;border:none;color:var(--dim);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em}
+.meta button:hover{color:var(--red)}
+
+/* ── reveal ── */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.rv.in{opacity:1;transform:none}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}
+
+@media(max-width:960px){
+  .hero-grid,.mani,.vs,.man-body{grid-template-columns:1fr}
+  .mani-l{position:static}
+  .agrid{grid-template-columns:1fr 1fr}
+  .w2{grid-column:span 2}
+  #bsod{position:static}
+}
+@media(max-width:620px){
+  .agrid{grid-template-columns:1fr}
+  .w2{grid-column:auto}
+  .legend,.crow{grid-template-columns:90px 1fr}
+  .bar.bad{grid-column:2}
+  .nf{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .tick-in{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body class="locked">
+<div id="noise"></div><div id="crt"></div>
+
+<!-- ══════════ ЗАГРУЗКА / ВХОД ══════════ -->
+<section id="boot" aria-label="Загрузка системы">
+  <button id="skip" type="button">[ ESC ] пропустить вход</button>
+  <div id="bootlog" aria-live="polite"></div>
+  <input id="bootinput" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Вход в систему">
+</section>
+
+<!-- ══════════ ШАПКА ══════════ -->
+<header>
+  <div class="wrap hd">
+    <div class="logo">guest@linux:~$</div>
+    <nav>
+      <a href="#why">манифест</a><a href="#args">аргументы</a><a href="#vs">сравнение</a>
+      <a href="#man">man</a><a href="#distro">дистрибутив</a><a href="#shell">терминал</a>
+    </nav>
+    <div class="upt"><span class="dot"></span><span>uptime <b id="upt">00:00:00</b></span><span id="clk"></span></div>
+  </div>
+</header>
+
+<main>
+<!-- ══════════ HERO ══════════ -->
+<section class="hero wrap">
+  <div class="hero-grid">
+    <div>
+      <div class="shebang">#!/usr/bin/env правда</div>
+      <h1><span data-scr>ЛИНУКС —</span><br><span class="g" data-scr>ЭТО ОФИГЕННО.</span></h1>
+      <p class="hero-sub">Свободная система, которая делает то, что хочешь <b>ты</b>. А не то, что решил комитет по принудительным обновлениям из Редмонда в 3 часа ночи.</p>
+      <div class="typed"><span id="typeline"></span><span class="cur">▮</span></div>
+      <ul class="chips">
+        <li><b>0 ₽</b> — навсегда</li><li><b>0</b> BSOD</li><li><b>100%</b> контроль</li><li><b>∞</b> кастомизация</li>
+      </ul>
+    </div>
+    <div class="term rv">
+      <div class="tb"><i></i><i></i><i></i><span>neofetch — 80×24</span></div>
+      <div class="nf">
+<pre>    .--.
+   |o_o |
+   |:_/ |
+  //   \ \
+ (|     | )
+/'\_   _/`\
+\___)=(___/</pre>
+        <div>
+          <div><span class="k">OS</span>: <span class="v">GNU/Linux 13 «Trixie»</span></div>
+          <div><span class="k">Host</span>: <span class="v">awesome-pc</span></div>
+          <div><span class="k">Kernel</span>: <span class="v">6.12.0-freedom</span></div>
+          <div><span class="k">Uptime</span>: <span class="v" id="nf-upt">0 минут</span></div>
+          <div><span class="k">Shell</span>: <span class="v">bash 5.2</span></div>
+          <div><span class="k">DE</span>: <span class="v">свобода</span></div>
+          <div><span class="k">Тема</span>: <span class="v">Midnight Phosphor</span></div>
+          <div><span class="k">CPU</span>: <span class="v">Freedom Core (8) @ 5.2 ГГц</span></div>
+          <div><span class="k">Память</span>: <span class="v"><span id="nf-mem">362 МБ</span> / 16 ГиБ</span></div>
+        </div>
+        <div class="palette"><span style="color:#45ff82">▓▓▓</span><span style="color:#ffc24b">▓▓▓</span><span style="color:#54e0d0">▓▓▓</span><span style="color:#ff5f56">▓▓▓</span><span style="color:#ff6ac1">▓▓▓</span><span style="color:#4aa3ff">▓▓▓</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="tick" aria-hidden="true"><div class="tick-in" id="tick1"></div></div>
+
+<!-- ══════════ МАНИФЕСТ ══════════ -->
+<section id="why" class="pad wrap">
+  <div class="mani">
+    <div class="mani-l">
+      <div class="snum"># 01</div>
+      <h2>$ cat<br>манифест.txt</h2>
+      <p>Пять причин, по которым пингвин на капоте бьёт любое окошко. Проверено миллионами серверов, ноутбуков, холодильников и Марсом.</p>
+      <div class="stamp rv d2">ОДОБРЕНО<br>ЯДРОМ<br>6.12 LTS</div>
+    </div>
+    <div>
+      <div class="mi rv"><div class="n">01</div><div class="lm"><div><h3>Свобода</h3><p>Исходный код открыт. Система принадлежит тебе, а не лицензионному соглашению на 47 страниц, которое никто не читал (кроме нас, там грустно).</p></div></div></div>
+      <div class="mi rv"><div class="n">02</div><div class="lm"><div><h3>Приватность</h3><p>Linux не спрашивает «разрешить отправку данных». Потому что ему нечего отправлять — телеметрии тут просто нет. Совсем. Ноль.</p></div></div></div>
+      <div class="mi rv"><div class="n">03</div><div class="lm"><div><h3>Контроль</h3><p>Каждый процесс, каждый файл, каждый байт — под твоим управлением. systemctl — твоя метла, chmod — твой скипетр.</p></div></div></div>
+      <div class="mi rv"><div class="n">04</div><div class="lm"><div><h3>Скорость</h3><p>8 ГБ на диске, 9 секунд до рабочего стола, вторая жизнь для ноутбука из 2012-го. Windows на нём даже не просыпается.</p></div></div></div>
+      <div class="mi rv"><div class="n">05</div><div class="lm"><div><h3>Сообщество</h3><p>Миллионы людей чинят, патчат и помогают бесплатно. Вместо платной поддержки — форум, где твой вопрос уже решили в 2014-м.</p></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ АРГУМЕНТЫ ══════════ -->
+<section id="args" class="pad wrap">
+  <div class="shead rv"><span class="snum"># 02</span><h2 data-scr>./аргументы.bash</h2><span class="snote">наведи курсор — терминал ответит</span></div>
+  <div class="agrid">
+    <div class="tcard a1 rv"><div class="tb"><i></i><i></i><i></i><span>безопасность</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> ls /вирусы</div><div class="t-out" data-lines="ls: нет такого каталога|вирусы под linux в дикой природе почти не встречаются"></div></div></div>
+    <div class="tcard a2 w2 rv d1"><div class="tb"><i></i><i></i><i></i><span>ресурсы</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> htop</div><div class="t-out" data-lines="CPU ▓░░░░░░░░░ 4%|RAM ▓░░░░░░░░░ 380 МБ|windows после запуска: 4,2 ГБ. просто чтобы существовать"></div></div></div>
+    <div class="tcard a3 rv d2"><div class="tb"><i></i><i></i><i></i><span>стабильность</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> uptime</div><div class="t-out" data-lines="up 437 дней, 12:42|перезагрузка не требуется|(windows переспрашивает: «точно не требуется?»)|нет, windows, точно"></div></div></div>
+    <div class="tcard a4 rv"><div class="tb"><i></i><i></i><i></i><span>софт</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> apt search свобода</div><div class="t-out" data-lines="найдено 12 849 пакетов|все — бесплатные. совсем."></div></div></div>
+    <div class="tcard a5 rv d1"><div class="tb"><i></i><i></i><i></i><span>диагностика</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> systemctl status windows.exe</div><div class="t-out" data-lines="× Failed with result «telemetry»|попытка запуска: отказано|причина: стыд"></div></div></div>
+    <div class="tcard a6 rv d2"><div class="tb"><i></i><i></i><i></i><span>диск</span></div>
+      <div class="tbody"><div class="tcmd"><span class="p">$</span> df -h /</div><div class="t-out" data-lines="занято: 8,2 ГиБ|windows хочет 60 ГиБ|…и просит ещё"></div></div></div>
+  </div>
+</section>
+
+<!-- ══════════ СРАВНЕНИЕ ══════════ -->
+<section id="vs" class="pad wrap">
+  <div class="shead rv"><span class="snum"># 03</span><h2 data-scr>sudo diff linux windows</h2><span class="snote">спойлер: файлы различаются. сильно</span></div>
+  <div class="vs">
+    <div class="rv">
+      <div class="legend"><span></span><b>LINUX ▲</b><i>WINDOWS ▼</i></div>
+      <div class="crow"><div class="row-h">Цена</div><div class="bar good"><i style="--w:5%"></i><b>0 ₽</b></div><div class="bar bad"><i style="--w:100%"></i><b>~14 000 ₽</b></div></div>
+      <div class="crow"><div class="row-h">ОЗУ после старта</div><div class="bar good"><i style="--w:8%"></i><b>340 МБ</b></div><div class="bar bad"><i style="--w:92%"></i><b>4 100 МБ</b></div></div>
+      <div class="crow"><div class="row-h">Место на диске</div><div class="bar good"><i style="--w:12%"></i><b>8 ГБ</b></div><div class="bar bad"><i style="--w:88%"></i><b>62 ГБ</b></div></div>
+      <div class="crow"><div class="row-h">Обновления</div><div class="bar good"><i style="--w:15%"></i><b>когда хочешь ты</b></div><div class="bar bad"><i style="--w:96%"></i><b>«не выключайте компьютер»</b></div></div>
+      <div class="crow"><div class="row-h">Телеметрия</div><div class="bar good"><i style="--w:4%"></i><b>отсутствует</b></div><div class="bar bad"><i style="--w:98%"></i><b>все ваши данные</b></div></div>
+      <div class="crow"><div class="row-h">Перезагрузки</div><div class="bar good"><i style="--w:9%"></i><b>редко, добровольно</b></div><div class="bar bad"><i style="--w:90%"></i><b>внезапно, принудительно</b></div></div>
+      <div class="verdict" id="verdict" data-lines="$ diff --brief linux windows|→ файлы различаются: качеством|$ verdict: безоговорочная победа 🐧"></div>
+    </div>
+    <div id="bsod" class="rv d1" role="button" tabindex="0" aria-label="Синий экран. Нажми, чтобы исправить">
+      <div class="sad">:(</div>
+      <p>На вашем компьютере возникла проблема, и его нужно перезагрузить. И ещё раз. И ещё.</p>
+      <p class="pct"><span id="bsodp">0</span>% сбора данных о сбое…</p>
+      <p class="hint">▸ нажми, чтобы исправить навсегда</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ MAN ══════════ -->
+<section id="man" class="paper">
+  <div class="wrap">
+    <div class="mhd rv"><span>LINUX(1)</span><span>РУКОВОДСТВО ПО СВОБОДЕ</span><span>LINUX(1)</span></div>
+    <div class="man-body">
+      <div class="rv">
+        <h4>NAME</h4>
+        <p>linux — свободная операционная система, которая делает то, что ей говорят</p>
+        <h4>SYNOPSIS</h4>
+        <p>linux [--свобода] [--приватность] [--без-bsod]</p>
+        <h4>DESCRIPTION</h4>
+        <ul>
+          <li>принадлежит пользователю, а не корпорации</li>
+          <li>обновляется тогда, когда удобно тебе</li>
+          <li>не показывает рекламу (у неё вообще нет рекламы)</li>
+          <li>оживляет железо, которое windows уже списала</li>
+          <li>работает на всём: от часов до суперкомпьютеров</li>
+        </ul>
+      </div>
+      <div class="rv d1">
+        <h4>OPTIONS</h4>
+        <ul>
+          <li><span class="flag">--свобода</span> включена по умолчанию, всегда, отключению не подлежит</li>
+          <li><span class="flag">--телеметрия</span> не предусмотрена конструкцией, даже если очень попросить</li>
+          <li><span class="flag">--кастомизация=всё</span> от курсора до ядра</li>
+        </ul>
+        <h4>BUGS</h4>
+        <p>Не обнаружены. Обнаруженные особенности легко лечатся конфигами.</p>
+        <h4>SEE ALSO</h4>
+        <p>windows(1) — работает плохо; bsod(1) — работает слишком часто; tux(7) — просто красавец.</p>
+      </div>
+    </div>
+    <div class="mftr rv"><span>LINUX FAN CLUB</span><span>2025</span><span>SEC. 1</span></div>
+  </div>
+</section>
+
+<!-- ══════════ ПОДБОР ДИСТРИБУТИВА ══════════ -->
+<section id="distro" class="pad wrap">
+  <div class="shead rv"><span class="snum"># 04</span><h2 data-scr>./подбери-дистрибутив.sh</h2><span class="snote">3 вопроса — и ты знаешь, с чего начать</span></div>
+  <div class="pbox rv">
+    <div class="tb"><i></i><i></i><i></i><span>подбери-дистрибутив — интерактив</span></div>
+    <div class="pbody" id="pout"></div>
+    <div class="pans" id="pans"></div>
+  </div>
+</section>
+
+<!-- ══════════ ЖИВОЙ ТЕРМИНАЛ ══════════ -->
+<section id="shell" class="pad wrap">
+  <div class="shead rv"><span class="snum"># 05</span><h2 data-scr>bash — попробуй сам</h2><span class="snote">это настоящий* терминал (*почти)</span></div>
+  <div class="shellbox rv">
+    <div class="tb"><i></i><i></i><i></i><span>guest@awesome-pc: ~ — bash — 80×24</span></div>
+    <div class="sh-out" id="shout"></div>
+    <div class="sh-in"><span class="p">guest@awesome-pc:~$</span><input id="shin" autocomplete="off" spellcheck="false" aria-label="Командная строка" placeholder="введи help…"></div>
+  </div>
+  <div class="hints rv d1" id="hints"></div>
+</section>
+
+<!-- ══════════ GIT LOG ══════════ -->
+<section id="log" class="pad wrap">
+  <div class="shead rv"><span class="snum"># 06</span><h2 data-scr>git log --сообщество</h2></div>
+  <div class="glog">
+    <div class="gc rv"><span class="h">a3f9c21</span> <span class="a">Алексей</span> <span class="d">· вчера</span><span class="m"><b>feat:</b> пересел с windows после 15 лет. ни разу не пожалел</span></div>
+    <div class="gc rv d1"><span class="h">7b2e0d4</span> <span class="a">Мария</span> <span class="d">· 3 дня назад</span><span class="m"><b>fix:</b> синие экраны больше не снятся по ночам</span></div>
+    <div class="gc rv d2"><span class="h">e51fa88</span> <span class="a">Дмитрий</span> <span class="d">· неделю назад</span><span class="m"><b>perf:</b> ноутбук живёт от батареи 6 часов вместо 2</span></div>
+    <div class="gc rv d3"><span class="h">09c3b7a</span> <span class="a">Ольга</span> <span class="d">· 2 недели назад</span><span class="m"><b>chore:</b> телеметрия удалена. вся. совсем. безвозвратно.</span></div>
+  </div>
+</section>
+
+<div class="tick rev" aria-hidden="true"><div class="tick-in" id="tick2"></div></div>
+
+<!-- ══════════ ФУТЕР ══════════ -->
+<footer>
+  <div class="wrap cta">
+    <h2 class="rv">ХВАТИТ ТЕРПЕТЬ <em>BSOD</em>.<br>ПЕРЕХОДИ НА ЛИНУКС.</h2>
+    <div class="pr-line rv d1">$ sudo mv ты /дом/линукс</div>
+    <a class="btn rv d2" href="#distro">sudo начать-новую-жизнь</a>
+    <div class="meta">
+      <span>© 2025 клуб любителей линукса · сайт собран в vim, мышь не использовалась</span>
+      <span>windows при создании сайта не пострадал — его здесь просто нет</span>
+      <button type="button" id="reboot">[ exit ] — выйти из системы</button>
+    </div>
+  </div>
+</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ══ ЗАГРУЗКА ══ */
+const boot = $('#boot'), blog = $('#bootlog'), bi = $('#bootinput');
+const LOGS = [
+ [250,'<span class="bl-dim">[    0.000000] Linux version 6.12.0-freedom (gcc 14.2.0) #1 SMP PREEMPT_DYNAMIC</span>'],
+ [160,'<span class="bl-dim">[    0.000000] командная строка: BOOT_IMAGE=/vmlinuz root=/dev/nvme0n1p2 quiet freedom=on windows=off</span>'],
+ [190,'<span class="bl-dim">[    0.004192] CPU0: Freedom Core @ 5.20 ГГц · телеметрия отключена на уровне совести</span>'],
+ [170,'<span class="bl-dim">[    0.011731] ACPI: найдено 0 причин для BSOD</span>'],
+ [210,'<span class="bl-ok">[  OK  ]</span> смонтирован /boot'],
+ [150,'<span class="bl-ok">[  OK  ]</span> запущена служба журнала'],
+ [180,'<span class="bl-ok">[  OK  ]</span> запущен Network Manager'],
+ [220,'<span class="bl-warn">[ WARN ]</span> windows.exe не найден — отличный знак'],
+ [170,'<span class="bl-ok">[  OK  ]</span> запущен демон свободы (freedomd)'],
+ [190,'<span class="bl-ok">[  OK  ]</span> достигнута цель Graphical Interface'],
+ [210,'<span class="bl-ok">[  OK  ]</span> достигнута цель Freedom'],
+ [180,'<span class="bl-dim">GNU/Linux 13 «Trixie» awesome-pc tty1</span>']
+];
+let bTimers = [], bState = 'logs', bLogin = '';
+
+function bLine(html, cls){
+  const d = document.createElement('div');
+  d.className = 'bl-line' + (cls ? ' '+cls : '');
+  d.innerHTML = html;
+  blog.appendChild(d); blog.scrollTop = blog.scrollHeight;
+  return d;
+}
+function runBoot(){
+  blog.innerHTML=''; bState='logs';
+  let t = RM ? 0 : 300;
+  LOGS.forEach(l => {
+    t += RM ? 0 : l[0] + Math.random()*120;
+    bTimers.push(setTimeout(() => bLine(l[1]), t));
+  });
+  bTimers.push(setTimeout(showLogin, t + 450));
+}
+function showLogin(){
+  bState = 'login';
+  bLine('<span style="color:#cfe3cf">awesome-pc login: </span><span id="mir"></span><span class="cur">▮</span>', 'prompt');
+  bi.value=''; setTimeout(()=>bi.focus(),50);
+}
+function finishBoot(){
+  bState = 'done';
+  const seq = [
+    ['Добро пожаловать, <b style="color:#45ff82">'+esc(bLogin)+'</b>. Здесь не следят и не заставляют обновляться.', 500],
+    ['guest@awesome-pc:~$ <b style="color:#45ff82">startx</b>', 700],
+    ['Запуск рабочего стола… ▓▓▓▓▓▓▓▓▓▓ <b style="color:#45ff82">100%</b>', 750]
+  ];
+  let t = 0;
+  seq.forEach(s => { t += RM ? 30 : s[1]; bTimers.push(setTimeout(()=>bLine(s[0]), t)); });
+  bTimers.push(setTimeout(powerOff, t + (RM ? 100 : 600)));
+}
+function powerOff(){
+  boot.classList.add('off');
+  document.body.classList.remove('locked');
+  document.body.classList.add('booted');
+  startUptime();
+  setTimeout(()=>{ boot.style.display='none'; }, 650);
+}
+function skipBoot(){
+  bTimers.forEach(clearTimeout); bTimers=[];
+  boot.classList.add('off');
+  document.body.classList.remove('locked');
+  document.body.classList.add('booted');
+  startUptime();
+  setTimeout(()=>{ boot.style.display='none'; }, 550);
+}
+bi.addEventListener('input', () => {
+  const mir = $('#mir'); if(!mir) return;
+  mir.textContent = bState === 'password' ? '•'.repeat(bi.value.length) : bi.value;
+  blog.scrollTop = blog.scrollHeight;
+});
+bi.addEventListener('keydown', e => {
+  if(e.key !== 'Enter') return;
+  const v = bi.value.trim();
+  if(bState === 'login'){
+    if(!v){ const p = blog.lastElementChild; p.classList.remove('shake'); void p.offsetWidth; p.classList.add('shake'); return; }
+    bLogin = v;
+    const mir = $('#mir'); if(mir){ mir.textContent = v; mir.parentElement.querySelector('.cur')?.remove(); }
+    bState = 'password';
+    bLine('<span style="color:#cfe3cf">Пароль: </span><span id="mir"></span><span class="cur">▮</span>', 'prompt');
+    bi.value='';
+  } else if(bState === 'password'){
+    const mir = $('#mir'); if(mir){ mir.textContent = '•'.repeat(bi.value.length) || '••••••'; mir.parentElement.querySelector('.cur')?.remove(); }
+    finishBoot();
+  }
+});
+$('#skip').addEventListener('click', skipBoot);
+document.addEventListener('keydown', e => {
+  if(boot.style.display !== 'none' && boot.classList.contains('off')) return;
+  if(e.key === 'Escape' && boot.style.display !== 'none' && document.body.classList.contains('locked')) skipBoot();
+  if(document.body.classList.contains('locked') && boot.style.display !== 'none') bi.focus({preventScroll:true});
+});
+document.addEventListener('click', () => { if(document.body.classList.contains('locked')) bi.focus({preventScroll:true}); });
+
+function reboot(){
+  window.scrollTo(0,0);
+  boot.style.display='flex'; boot.classList.remove('off');
+  document.body.classList.add('locked'); document.body.classList.remove('booted');
+  runBoot();
+}
+$('#reboot').addEventListener('click', reboot);
+
+/* ══ UPTIME / ЧАСЫ ══ */
+let t0 = null, uptIv = null;
+const pad = n => String(n).padStart(2,'0');
+function fmtUpt(ms){
+  const s = Math.floor(ms/1000);
+  return pad(Math.floor(s/3600))+':'+pad(Math.floor(s/60)%60)+':'+pad(s%60);
+}
+function startUptime(){
+  t0 = Date.now();
+  if(uptIv) clearInterval(uptIv);
+  uptIv = setInterval(() => {
+    const ms = Date.now()-t0;
+    $('#upt').textContent = fmtUpt(ms);
+    const nf = $('#nf-upt'); if(nf) nf.textContent = Math.max(1,Math.floor(ms/60000))+' минут';
+  }, 1000);
+}
+setInterval(() => { const d=new Date(); $('#clk').textContent = pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds()); }, 1000);
+setInterval(() => { $('#nf-mem').textContent = (342 + Math.floor(Math.random()*54)) + ' МБ'; }, 2200);
+
+/* ══ SCRAMBLE ══ */
+function scramble(el){
+  if(el.dataset.done) return; el.dataset.done = 1;
+  const text = el.dataset.scr || el.textContent; el.dataset.scr = text;
+  if(RM){ el.textContent = text; return; }
+  const gl = '▓▒░<>/#@%*+=01';
+  let frame = 0;
+  const iv = setInterval(() => {
+    frame++;
+    const done = Math.floor(frame/2);
+    let out = '';
+    for(let i=0;i<text.length;i++){
+      out += text[i]===' ' ? ' ' : (i<done ? text[i] : gl[(Math.random()*gl.length)|0]);
+    }
+    el.textContent = out;
+    if(done >= text.length){ clearInterval(iv); el.textContent = text; }
+  }, 26);
+}
+
+/* ══ ПЕЧАТЬ ══ */
+function typeLines(el){
+  if(el.dataset.done) return; el.dataset.done = 1;
+  const lines = el.dataset.lines.split('|');
+  if(RM){ el.textContent = lines.join('\n'); return; }
+  let li = 0, ci = 0;
+  const iv = setInterval(() => {
+    if(li >= lines.length){ clearInterval(iv); return; }
+    ci++;
+    el.textContent = lines.slice(0,li).join('\n') + (li ? '\n' : '') + lines[li].slice(0,ci);
+    if(ci >= lines[li].length){ li++; ci = 0; }
+  }, 16);
+}
+
+/* ══ OBSERVER ══ */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if(!e.isIntersecting) return;
+  e.target.classList.add('in');
+  e.target.querySelectorAll('[data-scr]').forEach(scramble);
+  if(e.target.matches('[data-scr]')) scramble(e.target);
+  e.target.querySelectorAll('[data-lines]').forEach(typeLines);
+  io.unobserve(e.target);
+}), {threshold:.2, rootMargin:'0px 0px -6%'});
+document.querySelectorAll('.rv, .shead').forEach(el => io.observe(el));
+
+/* ══ typed в hero ══ */
+const phrases = ['sudo apt install свобода','rm -rf C:\\','systemctl disable грусть.service','chmod +x жизнь','echo "пока, windows"'];
+(function loop(){
+  const el = $('#typeline');
+  if(RM){ el.textContent = phrases[0]; return; }
+  let pi = 0, ci = 0, del = false;
+  (function step(){
+    const p = phrases[pi];
+    el.textContent = p.slice(0, ci);
+    if(!del){ ci++; if(ci > p.length){ del = true; return setTimeout(step, 1600); } }
+    else { ci--; if(ci < 0){ ci = 0; del = false; pi = (pi+1)%phrases.length; } }
+    setTimeout(step, del ? 26 : 52);
+  })();
+})();
+
+/* ══ бегущие строки ══ */
+const tickItems = ['<b>sudo</b> apt update && <b>sudo</b> apt upgrade','rm -rf /mnt/windows','chmod +x <b>свобода</b>','pacman -S счастье','git push origin <b>свобода</b>','echo "пока, windows"','systemctl enable <b>жизнь</b>','uptime: 437 дней без bsod'];
+const th = tickItems.map(t=>'<span>'+t+'</span>').join('<span style="color:#2e452e">✦</span>');
+$('#tick1').innerHTML = th + th; $('#tick2').innerHTML = th + th;
+
+/* ══ BSOD ══ */
+const bsod = $('#bsod'); let bsodDone = false;
+function fixBsod(){
+  if(bsodDone) return; bsodDone = true;
+  const p = $('#bsodp'); let v = 0;
+  const iv = setInterval(() => {
+    v += RM ? 25 : 2 + Math.floor(Math.random()*4);
+    if(v >= 100){
+      clearInterval(iv);
+      bsod.classList.add('fixed');
+      bsod.innerHTML = '<div class="sad" style="color:#45ff82">✓</div>'+
+        '<p style="font-size:13px;color:#9fc79f">решение найдено за 0.003 сек:</p>'+
+        '<p style="color:#45ff82;font-weight:700">$ sudo apt install линукс</p>'+
+        '<p><a href="#distro">выбрать дистрибутив →</a></p>';
+    } else p.textContent = v;
+  }, RM ? 30 : 60);
+}
+bsod.addEventListener('click', fixBsod);
+bsod.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fixBsod(); } });
+
+/* ══ ПОДБОР ДИСТРИБУТИВА ══ */
+const DISTROS = {
+  mint:{n:'Linux Mint',t:'Уютный, как плед. Идеален после Windows.',d:1,p:'APT · Flatpak',x:'Привычный рабочий стол, всё работает из коробки, ничего не ломается и не следит.'},
+  ubuntu:{n:'Ubuntu',t:'Народный выбор. Миллионы не могут ошибаться… почти.',d:2,p:'APT · Snap',x:'Самый задокументированный дистрибутив: любой твой вопрос уже решили на форуме в 2016-м.'},
+  debian:{n:'Debian',t:'Скала. Стабильнее только гранит.',d:2,p:'APT',x:'Обновляется редко, но метко. Выбор серверов и людей с крепкими нервами.'},
+  fedora:{n:'Fedora',t:'Свежие технологии прямо из ядра.',d:3,p:'DNF',x:'То, что у остальных появится завтра, здесь уже сегодня. И оно работает.'},
+  arch:{n:'Arch Linux',t:'«Я использую Arch, кстати». Теперь и ты сможешь так говорить.',d:5,p:'pacman',x:'Собираешь систему сам, по кирпичику. Каждый кирпичик беспрекословно слушается.'}
+};
+const QS = [
+ {q:'Какой у тебя опыт?', a:[['Только Windows', {mint:3,ubuntu:1}],['Уже пробовал Linux',{ubuntu:2,fedora:2,mint:1}],['Компилировал ядро в 3 часа ночи',{arch:3,fedora:1}]]},
+ {q:'Что важнее?', a:[['Стабильность любой ценой',{debian:3,mint:1}],['Свежие пакеты и технологии',{fedora:2,arch:2}],['Страдание во имя контроля',{arch:3}]]},
+ {q:'Готов читать man?', a:[['Нет, я просто хочу чтобы работало',{mint:2,ubuntu:1}],['Да, конечно',{fedora:1,ubuntu:1,debian:1}],['man — моё вечернее чтиво',{arch:2,debian:1}]]}
+];
+let qStep = 0, score = {};
+const pout = $('#pout'), pans = $('#pans');
+function pLine(html, cls){
+  const d = document.createElement('div');
+  d.className = 'pl ' + (cls||''); d.innerHTML = html;
+  pout.appendChild(d); pout.scrollTop = pout.scrollHeight;
+  return d;
+}
+function askQ(){
+  const q = QS[qStep];
+  pLine('<span class="p">вопрос '+(qStep+1)+'/3:</span> '+q.q);
+  pans.innerHTML = '';
+  q.a.forEach(([label, pts]) => {
+    const b = document.createElement('button');
+    b.type='button'; b.textContent = '▸ '+label;
+    b.addEventListener('click', () => {
+      pLine('<span style="color:#586c58">└ ты выбрал: «'+esc(label)+'»</span>');
+      for(const k in pts) score[k] = (score[k]||0)+pts[k];
+      qStep++;
+      if(qStep < QS.length) setTimeout(askQ, RM ? 0 : 350);
+      else setTimeout(showResult, RM ? 0 : 500);
+    });
+    pans.appendChild(b);
+  });
+}
+function showResult(){
+  pLine('<span class="sys">анализирую ответы… сопоставляю с 657 дистрибутивами…</span>');
+  const top = Object.keys(score).sort((a,b)=>score[b]-score[a])[0] || 'mint';
+  const d = DISTROS[top];
+  setTimeout(() => {
+    pLine('<span class="p" style="color:#45ff82">✓ совпадение найдено:</span>');
+    const card = document.createElement('div');
+    card.className = 'dcard';
+    card.innerHTML = '<div class="dn">'+d.n+'</div><div class="dt">'+d.t+'</div>'+
+      '<div class="dm">сложность: '+'●'.repeat(d.d)+'○'.repeat(5-d.d)+' &nbsp;·&nbsp; пакеты: '+d.p+'</div>'+
+      '<p>'+d.x+'</p>';
+    pout.appendChild(card);
+    pans.innerHTML = '';
+    const rb = document.createElement('button');
+    rb.type='button'; rb.textContent = '↺ пройти заново';
+    rb.addEventListener('click', startPicker);
+    pans.appendChild(rb);
+  }, RM ? 0 : 700);
+}
+function startPicker(){
+  qStep = 0; score = {}; pout.innerHTML=''; pans.innerHTML='';
+  pLine('<span class="sys">#!/bin/bash</span>');
+  pLine('<span class="sys"># скрипт подбора идеального дистрибутива. точность: 146%</span>');
+  setTimeout(askQ, RM ? 0 : 400);
+}
+const pio = new IntersectionObserver(es => es.forEach(e => {
+  if(e.isIntersecting){ startPicker(); pio.disconnect(); }
+}), {threshold:.3});
+pio.observe($('.pbox'));
+
+/* ══ ЖИВОЙ ТЕРМИНАЛ ══ */
+const shout = $('#shout'), shin = $('#shin');
+function shPrint(text, cls){
+  const d = document.createElement('div');
+  d.className = 'shl ' + (cls||''); d.textContent = text;
+  shout.appendChild(d); shout.scrollTop = shout.scrollHeight;
+}
+function shHTML(html, cls){
+  const d = document.createElement('div');
+  d.className = 'shl ' + (cls||''); d.innerHTML = html;
+  shout.appendChild(d); shout.scrollTop = shout.scrollHeight;
+}
+shHTML('<span style="color:#45ff82">Добро пожаловать в awesome-pc!</span>','');
+shPrint('Введи «help», чтобы посмотреть команды. Или просто нажми подсказку ниже.','dim');
+const CMDS = {
+  help(){ shPrint('доступные команды:\n  help · ls · whoami · uname -a · date · neofetch\n  cat манифест · sudo rm -rf /windows · windows\n  vim · hack · кофе · echo · man · ping · apt · clear · exit','ok'); },
+  whoami(){ shPrint('guest (но в душе — root)'); },
+  ls(){ shPrint('манифест.txt   аргументы/   свобода/   windows.exe -> /dev/null'); },
+  uname(){ shPrint('Linux awesome-pc 6.12.0-freedom #1 SMP FREEDOM x86_64 GNU/Linux'); },
+  date(){ shPrint(new Date().toLocaleString('ru-RU')); },
+  neofetch(){ shPrint('        .--.\n       |o_o |\n       |:_/ |       guest@awesome-pc\n      //   \\ \\      ─────────────────\n     (|     | )     OS: GNU/Linux 13 «Trixie»\n    /\'\\_   _/`\\     Kernel: 6.12.0-freedom\n    \\___)=(___/     Uptime: вечность без сбоев\n                    Память: 362 МБ / 16 ГиБ','pre'); },
+  vim(){ shPrint('вход в vim…\n…никто никогда не выходил из vim. (попытка №4 291)','err'); },
+  windows(){ shPrint(':(  твой компьютер столкнулся с проблемой\nкод остановки: WINDOWS_IS_TIRED\nрешение: sudo apt install линукс → раздел «подбери дистрибутив»','blue'); },
+  hack(){
+    for(let i=0;i<5;i++){ let s=''; for(let j=0;j<42;j++) s += Math.random()<.5?'0':'1'; shPrint(s,'dim'); }
+    shPrint('✓ ДОСТУП К MAINFRAME ПОЛУЧЕН. (шутка. мы этикой дорожим)','ok');
+  },
+  кофе(){ shPrint('(ノ￣ー￣)ノ ☕  пожалуйста, твой кофе. сварен ядром.','ok'); },
+  clear(){ shout.innerHTML=''; },
+  exit(){ shPrint('выход… до встречи в терминале!','dim'); setTimeout(reboot, 700); },
+  apt(){ shPrint('apt: попробуй «apt install свобода»… уже установлено ✓','ok'); },
+  ping(){ shPrint('PING microsoft.com: запрос отклонён. слишком стыдно.','err'); },
+  man(){ shPrint('у «'+(arguments[0]||'жизнь')+'» нет man-страницы. живи по ману.'); },
+  echo(rest){ shPrint(rest.join(' ')); }
+};
+shin.addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ shRun(shin.value); shin.value=''; }
+});
+$('.shellbox').addEventListener('click', () => shin.focus({preventScroll:true}));
+const hints = ['help','neofetch','windows','sudo rm -rf /windows','vim','hack','кофе','cat манифест','exit'];
+hints.forEach(h => {
+  const b = document.createElement('button');
+  b.type='button'; b.textContent = h;
+  b.addEventListener('click', () => { shin.focus(); shRun(h); });
+  $('#hints').appendChild(b);
+});
+function shRun(raw){
+  raw = raw.trim(); if(!raw) return;
+  shHTML('<span class="p">guest@awesome-pc:~$</span> '+esc(raw),'cmd');
+  let parts = raw.split(/\s+/);
+  if(parts[0] === 'sudo'){
+    const rest = parts.slice(1).join(' ');
+    if(/^rm\s+(-\w+\s+)*\/windows/.test(rest) || /^rm\s+(-\w+\s+)*windows/i.test(rest)){
+      const steps = ['удаление C:\\Windows\\System32… готово','удаление телеметрии… готово','удаление принудительных обновлений… с удовольствием','✓ система стала на 42 ГБ легче и заметно счастливее'];
+      steps.forEach((s,i)=> setTimeout(()=>shPrint(s, i===3?'ok':'dim'), RM?0:300+i*450));
+      return;
+    }
+    if(/make\s*(кофе|coffee)/.test(rest)){ CMDS['кофе'](); return; }
+    shPrint('sudo: тебе не нужно просить — ты и так root','ok'); return;
+  }
+  const c = parts[0].toLowerCase(), rest = parts.slice(1);
+  if(c==='cat'){
+    if(/манифест|manifest/i.test(rest.join(' '))) shPrint('ЛИНУКС — ЭТО ОФИГЕННО.\nwindows — это «не выключайте компьютер».\nвыбирай с умом. выбирай свободу. 🐧','ok');
+    else shPrint('cat: '+rest.join(' ')+': нет такого файла (но он тебе и не нужен)','err');
+    return;
+  }
+  if(c==='винда'||c==='bsod'){ CMDS.windows(); return; }
+  if(c==='vi'){ CMDS.vim(); return; }
+  if(c==='взлом'){ CMDS.hack(); return; }
+  if(c==='coffee'){ CMDS['кофе'](); return; }
+  if(c==='выход'||c==='reboot'||c==='перезагрузка'){ CMDS.exit(); return; }
+  if(CMDS[c]){ c==='man' ? CMDS.man(rest.join(' ')||'жизнь') : c==='echo' ? CMDS.echo(rest) : CMDS[c](); return; }
+  shPrint('bash: '+raw+': команда не найдена. введи «help»','err');
+}
+
+/* ══ старт ══ */
+runBoot();
+})();
+</script>
+</body>
+</html>
