@@ -5,7 +5,7 @@
 и живой bash.
 
 ## Смотреть
-→ https://SnowyFedora.github.io/linux-manifest/
+https://snowyfedora.github.io/Linux-manifest/
 
 ## Фичи
 - 🔐 вход как в tty: логин, пароль, startx
