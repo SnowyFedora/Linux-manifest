@@ -265,6 +265,120 @@ footer{background:#050805;border-top:1px solid var(--line);padding:clamp(64px,10
   html{scroll-behavior:auto}
 }
 </style>
+<style id="minimal-redesign">
+
+/* ── MINIMAL REDESIGN ───────────────────────────────────────── */
+:root{
+  --bg:#080a0b;
+  --panel:#0d1011;
+  --panel2:#111516;
+  --line:#252b2d;
+  --line2:#343b3d;
+  --text:#e8ecec;
+  --muted:#899294;
+  --green:#9be564;
+  --green2:#c5f7a1;
+  --red:#ff7777;
+  --mono:"JetBrains Mono","IBM Plex Mono","SFMono-Regular",Consolas,monospace;
+}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 50% -10%,rgba(155,229,100,.055),transparent 32rem),
+    var(--bg)!important;
+  color:var(--text)!important;
+  font-family:var(--mono)!important;
+}
+body:before{
+  opacity:.025!important;
+  background-image:linear-gradient(var(--text) 1px,transparent 1px),linear-gradient(90deg,var(--text) 1px,transparent 1px)!important;
+  background-size:32px 32px!important;
+}
+.wrap{max-width:1120px!important;padding:0 24px!important}
+.hero{padding:72px 0 54px!important}
+.hero-grid{gap:56px!important;align-items:end!important}
+.hero h1,.hero .hd{
+  letter-spacing:-.055em!important;
+  line-height:.95!important;
+  text-shadow:none!important;
+}
+.hero-sub,.hero .hero-sub{color:var(--muted)!important;max-width:650px!important}
+.chips{gap:8px!important}
+.chips>*{
+  border:1px solid var(--line)!important;
+  background:rgba(255,255,255,.018)!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+.term,.tcard,.paper,.shellbox,.pbox,.mani,.cta,.verdict{
+  background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.012))!important;
+  border:1px solid var(--line)!important;
+  border-radius:12px!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.18)!important;
+}
+.term:focus-within,.tcard:hover,.tcard:focus-within,.cta:hover{
+  border-color:var(--line2)!important;
+}
+.term,.shellbox{overflow:hidden!important}
+.tb,.shead,.mhd{
+  background:rgba(255,255,255,.018)!important;
+  border-bottom:1px solid var(--line)!important;
+}
+.dot{box-shadow:none!important}
+.k,.g,.good,.bl-ok{color:var(--green)!important}
+.v,.muted,.hero-sub,.snote,.stamp,.bl-dim{color:var(--muted)!important}
+.bad,.err,.bl-warn{color:var(--red)!important}
+input,button,textarea,select{
+  font-family:var(--mono)!important;
+}
+button,.btn{
+  border:1px solid var(--line2)!important;
+  background:#101415!important;
+  color:var(--text)!important;
+  border-radius:8px!important;
+  box-shadow:none!important;
+  transition:background .15s,border-color .15s,transform .15s!important;
+}
+button:hover,.btn:hover{
+  background:#171c1d!important;
+  border-color:#4a5355!important;
+  transform:translateY(-1px)!important;
+}
+button:active,.btn:active{transform:translateY(0)!important}
+a{color:var(--text)!important}
+a:hover{color:var(--green)!important}
+.tcmd,.t-out,.sh-out,.glog,.man-body,.pbody{
+  line-height:1.7!important;
+}
+.agrid{gap:12px!important}
+.tcard{padding:18px!important}
+.tcard .tcmd{color:var(--green2)!important}
+.legend{color:var(--muted)!important}
+.bar{
+  background:#1b2021!important;
+  border-radius:999px!important;
+  overflow:hidden!important;
+}
+.bar>*{background:var(--green)!important}
+.verdict{box-shadow:none!important}
+.pr-line{border-color:var(--line)!important}
+.cta{margin-top:28px!important}
+.rev{border-top:1px solid var(--line)!important}
+footer{color:var(--muted)!important}
+::selection{background:rgba(155,229,100,.22);color:#fff}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:#293032;border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#3a4446}
+@media(max-width:760px){
+  .wrap{padding:0 16px!important}
+  .hero{padding:48px 0 36px!important}
+  .hero-grid{gap:28px!important}
+  .hero h1,.hero .hd{font-size:clamp(2.5rem,13vw,5rem)!important}
+  .term,.tcard,.paper,.shellbox,.pbox,.mani,.cta,.verdict{border-radius:10px!important}
+}
+
+</style>
 </head>
 <body class="locked">
 <div id="noise"></div><div id="crt"></div>
