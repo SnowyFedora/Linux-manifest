@@ -1,1 +1,113 @@
-PLACEHOLDER_WILL_FAIL
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Манифест GNU/Linux</title>
+<meta name="description" content="Манифест свободной ОС: GNU, четыре свободы, принципы, подбор дистрибутива. RU/EN.">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="boot"><button type="button" id="skip">[ Esc ] пропустить</button><div id="bootlog"></div><input id="boot-input" autocomplete="off" spellcheck="false"></section>
+<header><div class="header-inner"><div class="logo">guest@gnu-linux:~$</div>
+<nav><a href="#manifest">манифест</a><a href="#gnu">GNU</a><a href="#why">принципы</a><a href="#compare">сравнение</a><a href="#distro">дистрибутив</a><a href="#shell">терминал</a></nav>
+<div class="hdr-right">
+<button type="button" class="lang-btn active" id="lang-ru">RU</button>
+<button type="button" class="lang-btn" id="lang-en">EN</button>
+<div class="uptime"><span class="dot"></span>uptime <b id="upt">00:00:00</b></div>
+</div></div></header>
+<main>
+<section class="hero"><div class="wrap"><div class="hero-grid"><div>
+<p class="section-label">#!/usr/bin/env manifesto</p>
+<h1>GNU/Linux — право <span class="g">владеть машиной</span>.</h1>
+<p class="lead">Манифест свободного пользователя. Система, которую можно читать, менять и передавать — без EULA на 40 страниц и без телеметрии по умолчанию.</p>
+<ul class="chips"><li><b>0 ₽</b> лицензия</li><li><b>4</b> свободы ПО</li><li><b>0</b> телеметрии по умолчанию</li></ul>
+<div class="typed-box"><span id="typeline"></span><span class="cursor">▮</span></div>
+</div>
+<div class="card"><div class="card-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:8px">neofetch</span></div>
+<div class="card-body">
+<div class="nf-row"><span class="k">OS</span><span>GNU/Linux</span></div>
+<div class="nf-row"><span class="k">Kernel</span><span>Linux 6.x</span></div>
+<div class="nf-row"><span class="k">Userland</span><span>GNU</span></div>
+<div class="nf-row"><span class="k">License</span><span>GPL и друзья</span></div>
+<div class="nf-row"><span class="k">Owner</span><span>ты</span></div>
+</div></div></div></div></section>
+<div class="tick" aria-hidden="true"><div class="tick-in" id="tick1"></div></div>
+<section id="manifest"><div class="wrap narrow">
+<p class="section-label">01 · преамбула</p>
+<h2>Мы заявляем</h2>
+<p>Компьютер — инструмент. Он должен служить человеку, а не корпорации.</p>
+<p>«Linux» — это ядро. Полная система — <b>GNU/Linux</b>: ядро плюс userland проекта GNU. Этот манифест фиксирует принципы и факты. Решение — за тобой.</p>
+</div></section>
+<section id="gnu"><div class="wrap">
+<p class="section-label">02 · GNU</p>
+<h2>Четыре свободы</h2>
+<p class="lead">В 1983 Ричард Столлман объявил проект GNU. Ядро Linux (1991) сделало систему завершённой.</p>
+<div class="freedoms">
+<div class="freedom"><div class="fnum">0</div><div class="fname">Запускать</div><div class="fdesc">С любой целью</div></div>
+<div class="freedom"><div class="fnum">1</div><div class="fname">Изучать</div><div class="fdesc">Читать и менять код</div></div>
+<div class="freedom"><div class="fnum">2</div><div class="fname">Распространять</div><div class="fdesc">Делиться копиями</div></div>
+<div class="freedom"><div class="fnum">3</div><div class="fname">Улучшать</div><div class="fdesc">Публиковать изменения</div></div>
+</div></div></section>
+<section id="why"><div class="wrap narrow">
+<p class="section-label">03 · принципы</p>
+<h2>Пять опор</h2>
+<article class="principle"><div class="num">01</div><div><h3>Свобода кода</h3><p>Исходный код открыт. GPL защищает право читать, менять и распространять.</p></div></article>
+<article class="principle"><div class="num">02</div><div><h3>Приватность</h3><p>Нет телеметрии по умолчанию. Сбор данных — явный выбор.</p></div></article>
+<article class="principle"><div class="num">03</div><div><h3>Контроль</h3><p>Процессы, файлы, обновления — под управлением пользователя.</p></div></article>
+<article class="principle"><div class="num">04</div><div><h3>Ресурсы</h3><p>Лёгкий DE — сотни МБ ОЗУ. Старое железо снова работает.</p></div></article>
+<article class="principle"><div class="num">05</div><div><h3>Сообщество</h3><p>Документация, форумы, патчи — вместо единственного вендора.</p></div></article>
+</div></section>
+<section id="compare"><div class="wrap">
+<p class="section-label">04 · сравнение</p>
+<h2>Другие приоритеты</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Критерий</th><th>GNU/Linux</th><th>Windows 11</th></tr></thead>
+<tbody>
+<tr><td>Стоимость ОС</td><td class="good">0 ₽</td><td class="bad">лицензия</td></tr>
+<tr><td>ОЗУ (лёгкий DE)</td><td class="good">~300–900 МБ</td><td class="bad">~3–5 ГБ</td></tr>
+<tr><td>Диск (база)</td><td class="good">~5–15 ГБ</td><td class="bad">~40–70 ГБ+</td></tr>
+<tr><td>Обновления</td><td class="good">когда решаешь ты</td><td class="bad">часто принудительные</td></tr>
+<tr><td>Телеметрия</td><td class="good">нет / отключаема</td><td class="bad">по умолчанию</td></tr>
+<tr><td>Исходный код</td><td class="good">открыт</td><td class="bad">закрытый</td></tr>
+</tbody></table></div>
+</div></section>
+<section id="facts"><div class="wrap">
+<p class="section-label">05 · контекст</p>
+<h2>Где уже норма</h2>
+<div class="facts">
+<div class="fact"><div class="value">~100%</div><div class="label">TOP500 суперкомпьютеров</div></div>
+<div class="fact"><div class="value">~96%</div><div class="label">серверов интернета</div></div>
+<div class="fact"><div class="value">Android</div><div class="label">ядро Linux</div></div>
+<div class="fact"><div class="value">космос</div><div class="label">марсоходы, МКС</div></div>
+</div></div></section>
+<section id="distro"><div class="wrap">
+<p class="section-label">06 · старт</p>
+<h2>Подбор дистрибутива</h2>
+<p class="lead">Три вопроса → рекомендация и ссылка.</p>
+<div class="card"><div class="card-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:8px">./choose-distro</span></div>
+<div class="card-body picker-out" id="picker-out"></div>
+<div class="picker-actions" id="picker-actions"></div></div>
+</div></section>
+<section id="shell"><div class="wrap">
+<p class="section-label">07 · практика</p>
+<h2>Терминал</h2>
+<div class="card"><div class="card-head"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span style="margin-left:8px">guest@gnu-linux:~</span></div>
+<div class="card-body shell-out" id="shell-out"></div>
+<div class="shell-in"><span class="p">guest@gnu-linux:~$</span><input id="shell-input" autocomplete="off" spellcheck="false" placeholder="help"></div></div>
+<div class="hints" id="shell-hints"></div>
+</div></section>
+<div class="tick" aria-hidden="true"><div class="tick-in" id="tick2"></div></div>
+<footer><div class="wrap">
+<h2>Владей машиной. Не арендуй её.</h2>
+<a class="btn-cta" href="#distro">подобрать дистрибутив</a>
+<div class="footer-meta">
+<span>Live: <a href="https://linux-manifest.is-local.org/">linux-manifest.is-local.org</a></span>
+<span>Без трекеров</span>
+<button type="button" id="reboot">[ reboot ]</button>
+</div></div></footer>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
